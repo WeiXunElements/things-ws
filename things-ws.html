@@ -1,150 +1,207 @@
-<!--
-@license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
 <link rel="import" href="../polymer/polymer.html">
 
-<!--
-An element providing a solution to no problem in particular.
-
-Example:
-
-    <things-ws></things-ws>
-
-Example:
-
-    <things-ws>
-      <h2>Hello things-ws</h2>
-    </things-ws>
-
-@demo demo/index.html
-@hero hero.svg
--->
+<link rel="import" href="../things-global-behavior/things-global-behavior.html">
 
 <dom-module id="things-ws">
   <template>
-    <style>
-      :host {
-        display: block;
-        box-sizing: border-box;
-      }
-
-      .author img {
-        display: block;
-        float: left;
-        margin-right: 5px;
-        max-height: 100px;
-        max-width: 100px;
-      }
-    </style>
-
-    <h1>&lt;things-ws&gt;</h1>
-    <content></content>
-    <p class="author">
-      <img src$="{{author.image}}">
-      Cheers,<br/>
-      <span class="name">{{author.name}}</span>
-    </p>
+    <style></style>
   </template>
 
   <script>
     Polymer({
       is: 'things-ws',
 
+      behaviors: [ 
+        Things.GlobalBehavior 
+      ],
+
       properties: {
         /**
-         * `fancy` indicates that the element should don a monocle and tophat,
-         * while checking its pocket watch.
+         * WebSocket URL
          */
-        fancy: Boolean,
+        url: {
+          type: String,
+          notify: true,
+          observer: 'urlChanged'
+        },
 
         /**
-         * Describes the author of the element, but is really just an excuse to
-         * show off JSDoc annotations.
-         *
-         * @type {{name: string, image: string}}
+         * Auto Mode
          */
-        author: {
+        auto: {
+          type: Boolean,
+          notify: true,
+          value: false
+        }
+
+        /**
+         * WebSocket object.
+         * @private
+         * @type {WebSocket}
+         */
+        _ws: {
           type: Object,
-          // Use `value` to provide a default value for a property, by setting it
-          // on your element's prototype.
-          //
-          // If you provide a function, as we do here, Polymer will call that
-          // _per element instance_.
-          //
-          // We do that to ensure that each element gets its own copy of the
-          // value, rather than having it shared across all instances (via the
-          // prototype).
-          value: function() {
-            return {
-              name:  'Dimitri Glazkov',
-              image: 'http://addyosmani.com/blog/wp-content/uploads/2013/04/unicorn.jpg',
-            };
-          }
-        },
+          value: null
+        }       
       },
 
-      // Element Lifecycle
-
-      ready: function() {
-        // `ready` is called after all elements have been configured, but
-        // propagates bottom-up. This element's children are ready, but parents
-        // are not.
-        //
-        // This is the point where you should make modifications to the DOM (when
-        // necessary), or kick off any processes the element wants to perform.
-      },
-
-      attached: function() {
-        // `attached` fires once the element and its parents have been inserted
-        // into a document.
-        //
-        // This is a good place to perform any work related to your element's
-        // visual state or active behavior (measuring sizes, beginning animations,
-        // loading resources, etc).
-      },
-
-      detached: function() {
-        // The analog to `attached`, `detached` fires when the element has been
-        // removed from a document.
-        //
-        // Use this to clean up anything you did in `attached`.
-      },
-
-      // Element Behavior
-
-      /**
-       * Sometimes it's just nice to say hi.
-       *
-       * @param {string} greeting A positive greeting.
-       * @return {string} The full greeting.
-       */
-      sayHello: function(greeting) {
-        var response = greeting || 'Hello World!';
-        return 'things-ws says, ' + response;
+      listeners: {
+        'open': 'open',
+        'send': 'send',
+        'close': 'close'
       },
 
       /**
-       * The `things-ws-lasers` event is fired whenever `fireLasers` is called.
-       *
-       * @event things-ws-lasers
-       * @detail {{sound: String}}
+       * {{url}} change handler.
+       * @private
        */
+      urlChanged: function() {
+        if (this.auto) {
+          this.open();
+        }
+      },
 
       /**
-       * Attempt to destroy this element's enemies with a beam of light!
-       *
-       * Or, at least, dispatch an event in the vain hope that someone else will
-       * do the zapping.
+       * Send data through the WebSocket connection. Will optionally be json-encoded if {{json}} or {{jsonSend}} is truthy.
+       * @public
+       * @param  {*} data The data to send.
        */
-      fireLasers: function() {
-        this.fire('things-ws-lasers', {sound: 'Pew pew!'});
+      send: function(e, detail) {
+        console.log(detail);
+
+        if(!this._ws) {
+          this._onToastMessage('things-ws.send(...): not connected.');
+          return;
+        }
+
+        // TODO check if ws was closed
+        if (this.readyState !== 1) {
+          this._onwserror(this.readyState)
+          return;
+        }
+
+        if(detail) {
+          detail = JSON.stringify(detail);
+        }
+        this._ws.send(detail);
+      },
+
+      /**
+       * Open the connection if previously closed, or if {{auto}} is false.
+       * @public
+       */
+      open: function() {
+        this._connect();
+      },
+
+      /**
+       * Close Web Socket
+       */
+      close: function(reason) {
+        var ws = this._ws;
+        if(ws && ws.readyState) {
+          ws.close(reason);
+          ws = null;
+        }
+      },
+
+      /**
+       * Underlying connection readyState getter.
+       * @see {@link http://www.w3.org/TR/websockets/#dom-websocket-readystate}
+       * @public
+       * @type {Number}
+       */
+      get readyState() {
+        if(this._ws) {
+          return this._ws.readyState;
+        } else {
+          return -1;
+        }
+      },
+
+      /**
+       * Create a connection to the remote server identified by {{url}}.
+       * @private
+       */
+      _connect: function() {
+        if(!this.url) {
+          this._onToastMessage('things-ws.connect(...): no url.');
+          return;
+        }
+
+        if(this._ws) {
+          this._onToastMessage('things-ws.connect(...): already connected.');
+          return;
+        }
+
+        this._ws = new WebSocket(this.url);
+        this._ws.onopen = this._onwsopen.bind(this);
+        this._ws.onerror = this._onwserror.bind(this);
+        this._ws.onmessage = this._onwsmessage.bind(this);
+        this._ws.onclose = this._onwsclose.bind(this);
+      },
+      
+      /**
+       * WebSocket open event handler. Re-fires to the x-websocket element.
+       * @private
+       */
+      _onwsopen: function() {
+        // this.fire("open");
+        this._onToastMessage('WebSocket is avaliable');
+      },
+      
+      /**
+       * WebSocket error event handler. Re-fires to the x-websocket element.
+       * @private
+       */
+      _onwserror: function() {
+        var message;
+
+        switch(this.readyState) {
+          case 0:
+            message = 'WebSocket ERROR: The connection is not yet open.'
+            break;
+          case 1:
+            message = 'WebSocket: The connection is open and ready to communicate.'
+            break;
+          case 2:
+            message = 'WebSocket ERROR: The connection is in the process of closing.'
+            break;
+          case 3:
+            message = 'WebSocket ERROR: The connection is closed or couldn\'t be opened.'
+            break;
+        }
+
+        this._onToastMessage(message);
+      },
+      
+      /**
+       * WebSocket message event handler. Re-fires to the x-websocket element, after optionally json-parsing the payload if {{json}} or {{jsonReceive}} is truthy.
+       * @private
+       */
+      _onwsmessage: function(event) {
+        var data = event.data;
+        if(this.json || this.jsonReceive) {
+          data = JSON.parse(data);
+        }
+        this.fire("message", { data: data });
+      },
+      
+      /**
+       * WebSocket close event handler.
+       * @private
+       */
+      _onwsclose: function(event) {
+        this._onToastMessage(event.reason);
+        this._ws = null;
+      },
+
+      _onToastMessage: function(message) {
+        if (this.showToastMsg) {
+          this.showToastMsg(message);
+        } else {
+          console.log(message);
+        }
       }
     });
   </script>
