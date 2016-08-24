@@ -1,49 +1,67 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../things-global-behavior/things-global-behavior.html">
 
 <script src="../stomp-websocket/lib/stomp.min.js"></script>
 <script src="../sockjs/sockjs.min.js"></script>
 
 <dom-module id="things-ws-subscriber">
-	<script>
-		Polymer({
-			is: 'things-ws-subscriber',
+  <script>
+    Polymer({
+      is: 'things-ws-subscriber',
 
-			behaviors: [
-				Things.GlobalBehavior
-			],
+      behaviors: [
+        Things.GlobalBehavior
+      ],
 
-			properties: {
-				message: {
-					type: Object
-				},
+      properties: {
+        /**
+         * ws connection subject
+         */
+        subject: {
+          type: String
+        },
 
-				subject: {
-					type: String
-				},
+        /**
+         * ws url
+         */
+        wsUrl: {
+          type: String,
+          computed: '_computeWsUrl(urlKey)',
+          observer: '_wsUrlChanged'
+        },
 
-				url: {
-					type: String
-				},
+        /**
+         * global 변수에서 ws url이 저장 되어 있는 key 값
+         */
+        urlKey: {
+          type: String
+        },
 
-				login: {
-					type: String
-				}
-			},
+        /**
+         * login property
+         */
+        login: {
+          type: String
+        }
+      },
 
       /**
-       * websocket connection
        */
-      ready: function() {
-        if(this.globals.wsUrl) {
-          this.url = this.globals.wsUrl;
-          this.start();
-        }
+      _wsUrlChanged: function(wsUrl) {
+        if(wsUrl) this.start();
+      },
+
+      /**
+       * global 변수에 key가 urlKey와 같은 value를 찾아 wsUrl에 초기화
+       */
+      _computeWsUrl: function(urlKey) {
+        return this.globals[urlKey];
       },
 
       /**
        * disconnect from stomp server
        */
-			stop: function() {
+      stop: function() {
         /* implementation for stomp */
         if(this.client) {
           this.client.disconnect(function() {
@@ -52,7 +70,7 @@
 
           this.client = null
         }
-			},
+      },
 
       /**
        * connect to stomp server
@@ -60,7 +78,7 @@
       start: function() {
         this.stop()
 
-        var socket = new SockJS(this.url);
+        var socket = new SockJS(this.wsUrl);
         this.client = Stomp.over(socket);
 
         var self = this
@@ -72,10 +90,11 @@
         // the client is notified when it is connected to the server.
         // client.connect(login, passcode, function(frame) {
         this.client.connect({}, function(frame) {
-        	self.client.subscribe(self.subject, function(message) {
+          console.log('ws connected');
+          self.client.subscribe(self.subject, function(message) {
             var message = JSON.parse(message.body);
             self.fire('iron-signal', { name: 'subscribed', data: message });
-        	})
+          })
         })
       },
 
@@ -86,6 +105,6 @@
       status: function() {
         return this.client.connected;
       }
-		})
-	</script>
+    })
+  </script>
 </dom-module>
