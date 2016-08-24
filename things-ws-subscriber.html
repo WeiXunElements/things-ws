@@ -26,7 +26,6 @@
          */
         wsUrl: {
           type: String,
-          computed: '_computeWsUrl(urlKey)',
           observer: '_wsUrlChanged'
         },
 
@@ -45,18 +44,25 @@
         }
       },
 
+      observers: [
+        'globalsChanged(globals.*)'
+      ],
+
+      /**
+       * global 변수의 urlKey와 같은 값이 변화 하면 
+       * wsUrl을 초기화
+       */
+      globalsChanged: function(obj) {
+        if(obj.path.indexOf(this.urlKey) >= 0) {
+          this.wsUrl = this.globals[this.urlKey];
+        }
+      },
+
       /**
        * wsUrl이 변경 되면 connection을 시도
        */
       _wsUrlChanged: function(wsUrl) {
         if(wsUrl) this.start();
-      },
-
-      /**
-       * global 변수에 key가 urlKey와 같은 value를 찾아 wsUrl에 초기화
-       */
-      _computeWsUrl: function(urlKey) {
-        return this.globals[urlKey];
       },
 
       /**
