@@ -1,0 +1,91 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<script src="../stomp-websocket/lib/stomp.min.js"></script>
+<script src="../sockjs/sockjs.min.js"></script>
+
+<dom-module id="things-ws-subscriber">
+	<script>
+		Polymer({
+			is: 'things-ws-subscriber',
+
+			behaviors: [
+				Things.GlobalBehavior
+			],
+
+			properties: {
+				message: {
+					type: Object
+				},
+
+				subject: {
+					type: String
+				},
+
+				url: {
+					type: String
+				},
+
+				login: {
+					type: String
+				}
+			},
+
+      /**
+       * websocket connection
+       */
+      ready: function() {
+        if(this.globals.wsUrl) {
+          this.url = this.globals.wsUrl;
+          this.start();
+        }
+      },
+
+      /**
+       * disconnect from stomp server
+       */
+			stop: function() {
+        /* implementation for stomp */
+        if(this.client) {
+          this.client.disconnect(function() {
+            console.warn('ws disconnected')
+          });
+
+          this.client = null
+        }
+			},
+
+      /**
+       * connect to stomp server
+       */
+      start: function() {
+        this.stop()
+
+        var socket = new SockJS(this.url);
+        this.client = Stomp.over(socket);
+
+        var self = this
+        // this allows to display debug logs directly on the web page
+        this.client.debug = function(str) {
+          // console.log(str)
+        };
+
+        // the client is notified when it is connected to the server.
+        // client.connect(login, passcode, function(frame) {
+        this.client.connect({}, function(frame) {
+        	self.client.subscribe(self.subject, function(message) {
+            var message = JSON.parse(message.body);
+            self.fire('iron-signal', { name: 'subscribed', data: message });
+        	})
+        })
+      },
+
+      /**
+       * connection status
+       * return true / false
+       */
+      status: function() {
+        return this.client.connected;
+      }
+		})
+	</script>
+</dom-module>
