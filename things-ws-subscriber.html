@@ -33,7 +33,8 @@
          * global 변수에서 ws url이 저장 되어 있는 key 값
          */
         urlKey: {
-          type: String
+          type: String,
+          observer: '_urlKeyChanged'
         },
 
         /**
@@ -59,10 +60,19 @@
       },
 
       /**
-       * wsUrl이 변경 되면 connection을 시도
+       * wsUrl 변경시 ws 연결
        */
-      _wsUrlChanged: function(wsUrl) {
-        if(wsUrl) this.start();
+      _wsUrlChanged: function() {
+        this.start();
+      },
+
+      /**
+       * urlKey 변경시 wsUrl 초기화
+       */
+      _urlKeyChanged: function(urlKey) {
+        if(!this.globals && !this.globals[urlKey]) return;
+        
+        this.wsUrl = this.globals[urlKey];
       },
 
       /**
