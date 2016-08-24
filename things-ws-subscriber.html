@@ -46,6 +46,7 @@
       },
 
       /**
+       * wsUrl이 변경 되면 connection을 시도
        */
       _wsUrlChanged: function(wsUrl) {
         if(wsUrl) this.start();
@@ -90,7 +91,6 @@
         // the client is notified when it is connected to the server.
         // client.connect(login, passcode, function(frame) {
         this.client.connect({}, function(frame) {
-          console.log('ws connected');
           self.client.subscribe(self.subject, function(message) {
             var message = JSON.parse(message.body);
             self.fire('iron-signal', { name: 'subscribed', data: message });
