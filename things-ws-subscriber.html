@@ -63,6 +63,7 @@
        * wsUrl 변경시 ws 연결
        */
       _wsUrlChanged: function() {
+        if(this.wsUrl && this.wsUrl != '')
         this.start();
       },
 
