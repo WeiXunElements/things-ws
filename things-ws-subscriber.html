@@ -23,7 +23,7 @@
          */
         auto: {
           type: Boolean,
-          value: true
+          value: false
         },
 
         /**
@@ -121,7 +121,7 @@
         var socket = new SockJS(this.wsUrl);
         this.client = Stomp.over(socket);
         var me = this
-        
+
         // this allows to display debug logs directly on the web page
         this.client.debug = function(str) {
           // console.log(str)
