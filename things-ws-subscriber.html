@@ -4,6 +4,10 @@
 <script src="../stomp-websocket/lib/stomp.min.js"></script>
 <script src="../sockjs/sockjs.min.js"></script>
 
+<!--
+  Stomp Subscriber
+-->
+
 <dom-module id="things-ws-subscriber">
   <script>
     Polymer({
@@ -14,6 +18,14 @@
       ],
 
       properties: {
+        /**
+         * Auto Connection 설정 - 접속 URL이 있으면 자동 접속 할 지 여부 
+         */
+        auto: {
+          type: Boolean,
+          value: true
+        },
+
         /**
          * ws connection subject
          */
@@ -42,6 +54,13 @@
          */
         login: {
           type: String
+        },
+
+        /**
+         * Callback
+         */
+        callback: {
+          type: Object
         }
       },
 
@@ -64,7 +83,10 @@
        */
       _wsUrlChanged: function() {
         if(this.wsUrl && this.wsUrl != '')
-        this.start();
+
+        if(this.auto) {
+          this.start();
+        }
       },
 
       /**
@@ -98,8 +120,8 @@
 
         var socket = new SockJS(this.wsUrl);
         this.client = Stomp.over(socket);
-
-        var self = this
+        var me = this
+        
         // this allows to display debug logs directly on the web page
         this.client.debug = function(str) {
           // console.log(str)
@@ -108,9 +130,17 @@
         // the client is notified when it is connected to the server.
         // client.connect(login, passcode, function(frame) {
         this.client.connect({}, function(frame) {
-          self.client.subscribe(self.subject, function(message) {
-            var message = JSON.parse(message.body);
-            self.fire('iron-signal', { name: 'subscribed', data: message });
+          me.client.subscribe(me.subject, function(message) {
+            var data = JSON.parse(message.body);
+
+            // 1. callback이 있으면 callback 호출 
+            if(me.callback) {
+              me.callback(data);
+
+            // 2. 그렇지 않으면 fire event
+            } else {
+              me.fire('iron-signal', { name: 'subscribed', data: data });
+            }
           })
         })
       },
@@ -120,7 +150,7 @@
        * return true / false
        */
       status: function() {
-        return this.client.connected;
+        return this.client ? this.client.connected : false;
       }
     })
   </script>
