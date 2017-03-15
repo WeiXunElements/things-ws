@@ -1,157 +1,161 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../things-global-behavior/things-global-behavior.html">
 
-<script src="../stomp-websocket/lib/stomp.min.js"></script>
-<script src="../sockjs/sockjs.min.js"></script>
+<link rel="import" href="../things-libraries/things-stomp-lib.html">
+<link rel="import" href="../things-libraries/things-sockjs-lib.html">
 
 <!--
   Stomp Subscriber
 -->
 
 <dom-module id="things-ws-subscriber">
-  <script>
-    Polymer({
-      is: 'things-ws-subscriber',
+    <script>
+        Polymer({
+            is: 'things-ws-subscriber',
 
-      behaviors: [
-        Things.GlobalBehavior
-      ],
+            behaviors: [
+                Things.GlobalBehavior
+            ],
 
-      properties: {
-        /**
-         * Auto Connection 설정 - 접속 URL이 있으면 자동 접속 할 지 여부 
-         */
-        auto: {
-          type: Boolean,
-          value: false
-        },
+            properties: {
+                /**
+                 * Auto Connection 설정 - 접속 URL이 있으면 자동 접속 할 지 여부
+                 */
+                auto: {
+                    type: Boolean,
+                    value: false
+                },
 
-        /**
-         * ws connection subject
-         */
-        subject: {
-          type: String
-        },
+                /**
+                 * ws connection subject
+                 */
+                subject: {
+                    type: String
+                },
 
-        /**
-         * ws url
-         */
-        wsUrl: {
-          type: String,
-          observer: '_wsUrlChanged'
-        },
+                /**
+                 * ws url
+                 */
+                wsUrl: {
+                    type: String,
+                    observer: '_wsUrlChanged'
+                },
 
-        /**
-         * global 변수에서 ws url이 저장 되어 있는 key 값
-         */
-        urlKey: {
-          type: String,
-          observer: '_urlKeyChanged'
-        },
+                /**
+                 * global 변수에서 ws url이 저장 되어 있는 key 값
+                 */
+                urlKey: {
+                    type: String,
+                    observer: '_urlKeyChanged'
+                },
 
-        /**
-         * login property
-         */
-        login: {
-          type: String
-        },
+                /**
+                 * login property
+                 */
+                login: {
+                    type: String
+                },
 
-        /**
-         * Callback
-         */
-        callback: {
-          type: Object
-        }
-      },
+                /**
+                 * Callback
+                 */
+                callback: {
+                    type: Object
+                }
+            },
 
-      observers: [
-        'globalsChanged(globals.*)'
-      ],
+            observers: [
+                'globalsChanged(globals.*)'
+            ],
 
-      /**
-       * global 변수의 urlKey와 같은 값이 변화 하면 
-       * wsUrl을 초기화
-       */
-      globalsChanged: function(obj) {
-        if(obj.path.indexOf(this.urlKey) >= 0) {
-          this.wsUrl = this.globals[this.urlKey];
-        }
-      },
+            /**
+             * global 변수의 urlKey와 같은 값이 변화 하면
+             * wsUrl을 초기화
+             */
+            globalsChanged: function(obj) {
+                if (obj.path.indexOf(this.urlKey) >= 0) {
+                    this.wsUrl = this.globals[this.urlKey];
+                }
+            },
 
-      /**
-       * wsUrl 변경시 ws 연결
-       */
-      _wsUrlChanged: function() {
-        if(this.wsUrl && this.wsUrl != '')
+            /**
+             * wsUrl 변경시 ws 연결
+             */
+            _wsUrlChanged: function() {
+                if (this.wsUrl && this.wsUrl != '')
 
-        if(this.auto) {
-          this.start();
-        }
-      },
+                    if (this.auto) {
+                        this.start();
+                    }
+            },
 
-      /**
-       * urlKey 변경시 wsUrl 초기화
-       */
-      _urlKeyChanged: function(urlKey) {
-        if(!this.globals && !this.globals[urlKey]) return;
-        
-        this.wsUrl = this.globals[urlKey];
-      },
+            /**
+             * urlKey 변경시 wsUrl 초기화
+             */
+            _urlKeyChanged: function(urlKey) {
+                if (!this.globals && !this.globals[urlKey]) return;
 
-      /**
-       * disconnect from stomp server
-       */
-      stop: function() {
-        /* implementation for stomp */
-        if(this.client) {
-          this.client.disconnect(function() {
-            console.warn('ws disconnected')
-          });
+                this.wsUrl = this.globals[urlKey];
+            },
 
-          this.client = null
-        }
-      },
+            /**
+             * disconnect from stomp server
+             */
+            stop: function() {
+                /* implementation for stomp */
+                if (this.client) {
+                    this.client.disconnect(function() {
+                        console.warn('ws disconnected')
+                    });
 
-      /**
-       * connect to stomp server
-       */
-      start: function() {
-        this.stop()
+                    this.client = null
+                }
+            },
 
-        var socket = new SockJS(this.wsUrl);
-        this.client = Stomp.over(socket);
-        var me = this
+            /**
+             * connect to stomp server
+             */
+            start: function() {
+                this.stop()
 
-        // this allows to display debug logs directly on the web page
-        this.client.debug = function(str) {
-          // console.log(str)
-        };
+                var socket = new SockJS(this.wsUrl);
+                this.client = Stomp.over(socket);
+                var me = this
 
-        // the client is notified when it is connected to the server.
-        // client.connect(login, passcode, function(frame) {
-        this.client.connect({}, function(frame) {
-          me.client.subscribe(me.subject, function(message) {
-            var data = JSON.parse(message.body);
+                // this allows to display debug logs directly on the web page
+                this.client.debug = function(str) {
+                    // console.log(str)
+                };
 
-            // 1. callback이 있으면 callback 호출 
-            if(me.callback) {
-              me.callback(data);
+                // the client is notified when it is connected to the server.
+                // client.connect(login, passcode, function(frame) {
+                this.client.connect({}, function(frame) {
+                    me.client.subscribe(me.subject, function(message) {
+                        var data = JSON.parse(message.body);
 
-            // 2. 그렇지 않으면 fire event
-            } else {
-              me.fire('iron-signal', { name: 'subscribed', data: data });
+                        // 1. callback이 있으면 callback 호출
+                        if (me.callback) {
+                            me.callback(data);
+
+                            // 2. 그렇지 않으면 fire event
+                        } else {
+                            me.fire('iron-signal', {
+                                name: 'subscribed',
+                                data: data
+                            });
+                        }
+                    })
+                })
+            },
+
+            /**
+             * connection status
+             * return true / false
+             */
+            status: function() {
+                return this.client ? this.client.connected : false;
             }
-          })
         })
-      },
 
-      /**
-       * connection status
-       * return true / false
-       */
-      status: function() {
-        return this.client ? this.client.connected : false;
-      }
-    })
-  </script>
+    </script>
 </dom-module>

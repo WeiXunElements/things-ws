@@ -1,6 +1,6 @@
 {
   "name": "things-ws",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "authors": [
     "Hatio Lab. <heartyoh@hatiolab.com>"
   ],
@@ -18,7 +18,8 @@
     "/test/"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.2.0"
+    "polymer": "Polymer/polymer#^1.2.0",
+    "things-libraries": "ThingsElements/things-libraries#^0.1.2"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
