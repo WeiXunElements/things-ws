@@ -11,13 +11,15 @@
     Polymer({
       is: 'things-ws',
 
-      behaviors: [ 
-        Things.GlobalBehavior 
+      behaviors: [
+        Things.GlobalBehavior
       ],
 
       properties: {
         /**
          * WebSocket URL
+         * **********
+         * @type {String}
          */
         url: {
           type: String,
@@ -27,6 +29,8 @@
 
         /**
          * Auto Mode
+         * ********
+         * @type {Boolean}
          */
         auto: {
           type: Boolean,
@@ -36,6 +40,7 @@
 
         /**
          * WebSocket object.
+         * ******
          * @private
          * @type {WebSocket}
          */
@@ -53,6 +58,7 @@
 
       /**
        * {{url}} change handler.
+       * *********
        * @private
        */
       urlChanged: function() {
@@ -63,6 +69,7 @@
 
       /**
        * Send data through the WebSocket connection. Will optionally be json-encoded if {{json}} or {{jsonSend}} is truthy.
+       * *********
        * @public
        * @param  {*} data The data to send.
        */
@@ -96,6 +103,7 @@
 
       /**
        * Close Web Socket
+       * **********
        */
       close: function(reason) {
         var ws = this._ws;
@@ -121,6 +129,7 @@
 
       /**
        * Create a connection to the remote server identified by {{url}}.
+       * *********
        * @private
        */
       _connect: function() {
@@ -140,16 +149,17 @@
         this._ws.onmessage = this._onwsmessage.bind(this);
         this._ws.onclose = this._onwsclose.bind(this);
       },
-      
+
       /**
        * WebSocket open event handler. Re-fires to the x-websocket element.
+       * 
        * @private
        */
       _onwsopen: function() {
         // this.fire("open");
         this._onToastMessage('WebSocket is avaliable');
       },
-      
+
       /**
        * WebSocket error event handler. Re-fires to the x-websocket element.
        * @private
@@ -174,7 +184,7 @@
 
         this._onToastMessage(message);
       },
-      
+
       /**
        * WebSocket message event handler. Re-fires to the x-websocket element, after optionally json-parsing the payload if {{json}} or {{jsonReceive}} is truthy.
        * @private
@@ -186,7 +196,7 @@
         }
         this.fire("message", { data: data });
       },
-      
+
       /**
        * WebSocket close event handler.
        * @private

@@ -20,6 +20,8 @@
             properties: {
                 /**
                  * Auto Connection 설정 - 접속 URL이 있으면 자동 접속 할 지 여부
+                 * ********
+                 * @type {Boolean}
                  */
                 auto: {
                     type: Boolean,
@@ -28,6 +30,8 @@
 
                 /**
                  * ws connection subject
+                 * *******
+                 * @type {String}
                  */
                 subject: {
                     type: String
@@ -35,6 +39,8 @@
 
                 /**
                  * ws url
+                 * *******
+                 * @type {String}
                  */
                 wsUrl: {
                     type: String,
@@ -43,6 +49,8 @@
 
                 /**
                  * global 변수에서 ws url이 저장 되어 있는 key 값
+                 * *******
+                 * @type {String}
                  */
                 urlKey: {
                     type: String,
@@ -51,6 +59,8 @@
 
                 /**
                  * login property
+                 * *******
+                 * @type {String}
                  */
                 login: {
                     type: String
@@ -58,6 +68,7 @@
 
                 /**
                  * Callback
+                 * @type {Object}
                  */
                 callback: {
                     type: Object
@@ -71,6 +82,7 @@
             /**
              * global 변수의 urlKey와 같은 값이 변화 하면
              * wsUrl을 초기화
+             * **********
              */
             globalsChanged: function(obj) {
                 if (obj.path.indexOf(this.urlKey) >= 0) {
@@ -80,6 +92,7 @@
 
             /**
              * wsUrl 변경시 ws 연결
+             * *********
              */
             _wsUrlChanged: function() {
                 if (this.wsUrl && this.wsUrl != '')
@@ -91,6 +104,7 @@
 
             /**
              * urlKey 변경시 wsUrl 초기화
+             * **********
              */
             _urlKeyChanged: function(urlKey) {
                 if (!this.globals && !this.globals[urlKey]) return;
@@ -100,6 +114,7 @@
 
             /**
              * disconnect from stomp server
+             * *********
              */
             stop: function() {
                 /* implementation for stomp */
@@ -114,6 +129,7 @@
 
             /**
              * connect to stomp server
+             * *********
              */
             start: function() {
                 this.stop()
@@ -151,6 +167,7 @@
             /**
              * connection status
              * return true / false
+             * *********
              */
             status: function() {
                 return this.client ? this.client.connected : false;
