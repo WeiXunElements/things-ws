@@ -1,6 +1,6 @@
 # things-ws
 
-## things-ws-subscriber로 websocket정보를 subscribing하는 화면
+## This is a screen for subscribing websocket information through things-ws-subscriber.
 
 ```html
     <things-ws-subscriber id="subscriber"
@@ -10,7 +10,8 @@
     </things-ws-subscriber>
 ```
 
-아래와 같은 Event를 발생한다.
+The following event is fired.
+
 ```js
         this.fire('iron-signal',{name:'subscribed', data: message})
 ```
@@ -21,8 +22,7 @@
 
 ## Dependencies
 
-Element dependencies are managed via [Bower](http://bower.io/). You can
-install that via:
+Element dependencies are managed via [Bower](http://bower.io/). You can install that via:
 
     npm install -g bower
 
