@@ -1,8 +1,8 @@
 {
   "name": "things-ws",
-  "version": "v2.2.1",
+  "version": "v2.2.2",
   "authors": [
-    "Hatio Lab. <heartyoh@hatiolab.com>"
+    "Shenzhen Weixun"
   ],
   "description": "An element providing badge button.",
   "keywords": [
@@ -11,8 +11,6 @@
     "seed"
   ],
   "main": "things-ws.html",
-  "license": "http://license.hatiolab.com/EULA",
-  "homepage": "http://elements.hatiolab.com/",
   "ignore": [
     "/.*",
     "/test/"

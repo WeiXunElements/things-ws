@@ -1,10 +1,10 @@
 <!--
 @license
-Copyright © HatioLab Inc. All rights reserved.
+Copyright © 2015-2021 Shenzhen Weixun All rights reserved.
 -->
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/polymer.html" />
 
-<link rel="import" href="../things-global-behavior/things-global-behavior.html">
+<link rel="import" href="../things-global-behavior/things-global-behavior.html" />
 
 <dom-module id="things-ws">
   <template>
@@ -15,10 +15,7 @@ Copyright © HatioLab Inc. All rights reserved.
     Polymer({
       is: 'things-ws',
 
-      behaviors: [
-        Things.GlobalBehavior,
-        Things.MsgBoxBehavior
-      ],
+      behaviors: [Things.GlobalBehavior, Things.MsgBoxBehavior],
 
       properties: {
         /**
@@ -29,7 +26,7 @@ Copyright © HatioLab Inc. All rights reserved.
         url: {
           type: String,
           notify: true,
-          observer: 'urlChanged'
+          observer: 'urlChanged',
         },
 
         /**
@@ -40,7 +37,7 @@ Copyright © HatioLab Inc. All rights reserved.
         auto: {
           type: Boolean,
           notify: true,
-          value: false
+          value: false,
         },
 
         /**
@@ -51,14 +48,14 @@ Copyright © HatioLab Inc. All rights reserved.
          */
         _ws: {
           type: Object,
-          value: null
-        }
+          value: null,
+        },
       },
 
       listeners: {
-        'open': 'open',
-        'send': 'send',
-        'close': 'close'
+        open: 'open',
+        send: 'send',
+        close: 'close',
       },
 
       /**
@@ -66,7 +63,7 @@ Copyright © HatioLab Inc. All rights reserved.
        * *********
        * @private
        */
-      urlChanged: function() {
+      urlChanged: function () {
         if (this.auto) {
           this.open();
         }
@@ -78,22 +75,22 @@ Copyright © HatioLab Inc. All rights reserved.
        * @public
        * @param  {*} data The data to send.
        */
-      send: function(e, detail) {
+      send: function (e, detail) {
         console.log(detail);
 
-        if(this._ws !=null && this._ws.readyState == 1) {
-            if(detail) {
-              detail = JSON.stringify(detail);
-            }
-            this._ws.send(detail);
+        if (this._ws != null && this._ws.readyState == 1) {
+          if (detail) {
+            detail = JSON.stringify(detail);
+          }
+          this._ws.send(detail);
         } else {
           this.open();
-          this.async(function() {
+          this.async(function () {
             if (this._ws.readyState !== 1) {
               this._onwserror();
               return;
             }
-            if(detail) {
+            if (detail) {
               detail = JSON.stringify(detail);
             }
             this._ws.send(detail);
@@ -106,7 +103,7 @@ Copyright © HatioLab Inc. All rights reserved.
        * ********
        * @public
        */
-      open: function() {
+      open: function () {
         this._connect();
       },
 
@@ -114,9 +111,9 @@ Copyright © HatioLab Inc. All rights reserved.
        * Close Web Socket
        * **********
        */
-      close: function(reason) {
+      close: function (reason) {
         var ws = this._ws;
-        if(ws && ws.readyState) {
+        if (ws && ws.readyState) {
           ws.close(reason);
           ws = null;
         }
@@ -130,7 +127,7 @@ Copyright © HatioLab Inc. All rights reserved.
        * @type {Number}
        */
       get readyState() {
-        if(this._ws) {
+        if (this._ws) {
           return this._ws.readyState;
         } else {
           return -1;
@@ -142,13 +139,13 @@ Copyright © HatioLab Inc. All rights reserved.
        * *********
        * @private
        */
-      _connect: function() {
-        if(!this.url) {
+      _connect: function () {
+        if (!this.url) {
           this._onToastMessage('things-ws.connect(...): no url.');
           return;
         }
 
-        if(this._ws) {
+        if (this._ws) {
           this._onToastMessage('things-ws.connect(...): already connected.');
           return;
         }
@@ -165,7 +162,7 @@ Copyright © HatioLab Inc. All rights reserved.
        *
        * @private
        */
-      _onwsopen: function() {
+      _onwsopen: function () {
         // this.fire("open");
         this._onToastMessage('WebSocket is avaliable');
       },
@@ -174,54 +171,54 @@ Copyright © HatioLab Inc. All rights reserved.
        * WebSocket error event handler. Re-fires to the x-websocket element.
        * @private
        */
-      _onwserror: function() {
+      _onwserror: function () {
         var message;
 
-        switch(this.readyState) {
+        switch (this.readyState) {
           case 0:
-            message = Things.DataGlobal.t('error.print_not_connect')
+            message = Things.DataGlobal.t('error.print_not_connect');
             break;
           case 1:
-            message = Things.DataGlobal.t('text.print_connect_success')
+            message = Things.DataGlobal.t('text.print_connect_success');
             this._onToastMessage(message);
             return true;
             break;
           case 2:
-            message = Things.DataGlobal.t('error.print_connect_closing')
+            message = Things.DataGlobal.t('error.print_connect_closing');
             break;
           case 3:
-            message = Things.DataGlobal.t('error.print_connect_fail')
+            message = Things.DataGlobal.t('error.print_connect_fail');
             break;
           case -1:
-            message = Things.DataGlobal.t('error.print_connect_fail')
+            message = Things.DataGlobal.t('error.print_connect_fail');
             break;
         }
 
-          this._onErrorAlertMessage(message);
+        this._onErrorAlertMessage(message);
       },
 
       /**
        * WebSocket message event handler. Re-fires to the x-websocket element, after optionally json-parsing the payload if {{json}} or {{jsonReceive}} is truthy.
        * @private
        */
-      _onwsmessage: function(event) {
+      _onwsmessage: function (event) {
         var data = event.data;
-        if(this.json || this.jsonReceive) {
+        if (this.json || this.jsonReceive) {
           data = JSON.parse(data);
         }
-        this.fire("message", { data: data });
+        this.fire('message', { data: data });
       },
 
       /**
        * WebSocket close event handler.
        * @private
        */
-      _onwsclose: function(event) {
+      _onwsclose: function (event) {
         this._onToastMessage(event.reason);
         this._ws = null;
       },
 
-      _onToastMessage: function(message) {
+      _onToastMessage: function (message) {
         if (this.showToastMsg) {
           this.showToastMsg(message);
         } else {
@@ -229,14 +226,14 @@ Copyright © HatioLab Inc. All rights reserved.
         }
       },
 
-      _onErrorAlertMessage: function(message) {
+      _onErrorAlertMessage: function (message) {
         this.openInfoMsg({
           title: Things.DataGlobal.t('label.connect_error'),
           text: message,
-          type: 'error'
+          type: 'error',
         });
-        console.log(Things.DataGlobal.t('label.connect_error')+message)
-      }
+        console.log(Things.DataGlobal.t('label.connect_error') + message);
+      },
     });
   </script>
 </dom-module>
